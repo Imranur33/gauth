@@ -1,0 +1,7 @@
+fastapi 
+starlette
+oauthlib 
+requests 
+jinja2
+python-dotenv
+itsdangerous

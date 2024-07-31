@@ -1,0 +1,14 @@
+<!-- templates/profile.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Profile</title>
+</head>
+<body>
+    <h1>User Profile</h1>
+    <p><strong>Name:</strong> {{ user_info.name }}</p>
+    <p><strong>Email:</strong> {{ user_info.email }}</p>
+    <p><strong>DOB:</strong> {{ user_info.birthday  }}</p>
+    <p><strong>Profile Picture:</strong> <img src="{{ user_info.picture }}" alt="Profile Picture" /></p>
+</body>
+</html>
