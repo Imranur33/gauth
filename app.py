@@ -17,6 +17,10 @@ CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 REDIRECT_URI = os.getenv('REDIRECT_URI')
 SESSION_SECRET_KEY = os.getenv('SESSION_SECRET_KEY')
+print(os.getenv("CLIENT_ID"))
+print(os.getenv("CLIENT_SECRET"))
+print(os.getenv("REDIRECT_URI"))
+print(os.getenv("SESSION_SECRET_KEY"))
 
 app = FastAPI()
 
