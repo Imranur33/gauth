@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Response, Depends, HTTPException
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
@@ -6,9 +6,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from oauthlib.oauth2 import WebApplicationClient
 import requests
 import uuid
-import oauthlib
-from dotenv import load_dotenv
 import os
+from dotenv import load_dotenv
+from typing import List
 
 
 load_dotenv()
@@ -17,10 +17,6 @@ CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 REDIRECT_URI = os.getenv('REDIRECT_URI')
 SESSION_SECRET_KEY = os.getenv('SESSION_SECRET_KEY')
-print(os.getenv("CLIENT_ID"))
-print(os.getenv("CLIENT_SECRET"))
-print(os.getenv("REDIRECT_URI"))
-print(os.getenv("SESSION_SECRET_KEY"))
 
 app = FastAPI()
 
@@ -30,10 +26,10 @@ app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY)
 # Add CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  
-    allow_headers=["*"],  
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 templates = Jinja2Templates(directory="templates")
@@ -45,6 +41,9 @@ USERINFO_URL = "https://www.googleapis.com/oauth2/v1/userinfo"
 
 # Create an OAuth 2.0 client
 client = WebApplicationClient(CLIENT_ID)
+
+# WebSocket connections storage
+websocket_connections: List[WebSocket] = []
 
 @app.get("/")
 async def read_root():
@@ -86,7 +85,6 @@ async def google_callback(request: Request):
         token_response = requests.post(token_url, headers=headers, data=body, auth=(CLIENT_ID, CLIENT_SECRET))
         token_response.raise_for_status()
         token_data = client.parse_request_body_response(token_response.text)
-        print(token_data)
 
         # Get user info
         userinfo_endpoint, headers, _ = client.add_token(USERINFO_URL)
@@ -94,9 +92,27 @@ async def google_callback(request: Request):
         userinfo_response.raise_for_status()
         user_info = userinfo_response.json()
 
+        # Notify WebSocket clients about the login success
+        for ws in websocket_connections:
+            await ws.send_text(f"User {user_info['email']} logged in successfully")
+
         return templates.TemplateResponse("profile.html", {"request": request, "user_info": user_info})
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=500, detail="Error fetching user info")
-    except oauthlib.oauth2.rfc6749.errors.OAuth2Error as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    # except oauthlib.oauth2.rfc6749.errors.OAuth2Error as e:
+    #     raise HTTPException(status_code=400, detail=str(e))
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    websocket_connections.append(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            # Handle received messages from WebSocket client
+            # Example: Send a confirmation back
+            await websocket.send_text(f"Message received: {data}")
+    except WebSocketDisconnect:
+        websocket_connections.remove(websocket)
+        print("WebSocket disconnected")
 
