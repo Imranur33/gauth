@@ -99,8 +99,7 @@ async def google_callback(request: Request):
         return templates.TemplateResponse("profile.html", {"request": request, "user_info": user_info})
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=500, detail="Error fetching user info")
-    # except oauthlib.oauth2.rfc6749.errors.OAuth2Error as e:
-    #     raise HTTPException(status_code=400, detail=str(e))
+    
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
