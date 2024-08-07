@@ -1,0 +1,20 @@
+@host=http://127.0.0.1:8000
+@token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE3MjU2MDIxMjd9.Gjd6axFzOkA2FKP-qctyNLjowLzfTC8Kco3YsdiEiVY
+//Authorization: Bearer {{token}}
+POST {{host}}/login HTTP/1.1
+content-type: application/json
+
+{
+    "email": "string",
+    "password": "string"
+}
+
+###
+GET {{host}}/authorized HTTP/1.1
+content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE3MjU2MDIxOTl9.CBXR-vyDP550WgvcV_jgooWn-9b3Q9hj_n6VF9nQyks
+
+###
+GET {{host}}/users/me HTTP/1.1
+content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE3MjU2MDIxOTl9.CBXR-vyDP550WgvcV_jgooWn-9b3Q9hj_n6VF9nQyks
